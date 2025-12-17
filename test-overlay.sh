@@ -2,42 +2,46 @@
 
 set -euxo pipefail
 
-print_ok() {
-  echo -e "\033[32m[OK] $1\033[0m"
+print_info() {
+  echo -e "\033[32m$1\033[0m"
 }
 
-print_err() {
-  echo -e "\033[31m[ERR] $2\033[0m"
+install_fuse_overlay() {
+  if ! command -v fuse-overlayfs > /dev/null; then
+    apt-get update
+    apt-get install -y fuse-overlayfs
+  fi
 }
 
 create_layers() {
-  for i in $(seq 1 5); do
-    mkdir -p "/tmp/overlay/layer$i"
-    echo "layer$i" > "/tmp/overlay/layer$i/layer.txt"
-  done
-  mkdir -p /tmp/overlay/merged
+  mkdir -p /tmp/overlay/gcc/bin/
+  echo "gcc" > /tmp/overlay/gcc/bin/gcc.txt
+
+  mkdir -p /tmp/overlay/libc-host/triplet/lib/
+  echo "libc-host" > /tmp/overlay/libc-host/triplet/lib/libc.txt
+
+  mkdir -p /tmp/overlay/libc-target/lib/
+  echo "libc-target" > /tmp/overlay/libc-target/lib/libc.txt
 }
 
 test_overlay_1() {
-  mount -t overlay overlay /tmp/overlay/merged -o lowerdir=/tmp/overlay/layer1:/tmp/overlay/layer2
-  if [[ $(cat /tmp/overlay/merged/layer.txt) == "layer1" ]]; then
-    print_ok "test_overlay_1 okay, content of merged directory is layer1"
-  else
-    print_err "test_overlay_1 failed, content of merged directory:"
-    cat /tmp/overlay/merged/layer.txt
-  fi
+  mount -t overlay overlay /tmp/overlay/merged -o lowerdir=/tmp/overlay/gcc:/tmp/overlay/libc-host
+
+  print_info "gcc:"
+  cat /tmp/overlay/merged/bin/gcc.txt
+
+  print_info "libc:"
+  cat /tmp/overlay/merged/triplet/lib/libc.txt
 }
 
 test_overlay_2() {
-  mount -t overlay overlay /tmp/overlay/merged -o lowerdir=/tmp/overlay/layer3:/tmp/overlay/merged
-  if [[ $(cat /tmp/overlay/merged/layer.txt) == "layer3" ]]; then
-    print_ok "test_overlay_2 okay, content of merged directory is layer3"
-  else
-    print_err "test_overlay_2 failed, content of merged directory:"
-    cat /tmp/overlay/merged/layer.txt
-  fi
+  fuse-overlayfs -o lowerdir=/tmp/overlay/libc-target:/tmp/overlay/merged/triplet /tmp/overlay/merged/triplet
+
+  print_info "libc:"
+  cat /tmp/overlay/merged/triplet/lib/libc.txt
 }
 
+install_fuse_overlay
 create_layers
 test_overlay_1
 test_overlay_2
