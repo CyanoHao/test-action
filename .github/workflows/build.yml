@@ -25,6 +25,7 @@ jobs:
             docker.io/amd64/ubuntu:24.04 \
             ./test-overlay.sh || {
             sudo dmesg
+            exit 1
           }
 
   test_overlay_docker:
@@ -40,4 +41,5 @@ jobs:
             docker.io/amd64/ubuntu:24.04 \
             ./test-overlay.sh || {
             sudo dmesg
+            exit 1
           }
