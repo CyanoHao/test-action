@@ -19,7 +19,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - run: podman run --rm --cap-add=sys_admin -v $PWD:/mnt -w /mnt docker.io/amd64/ubuntu:24.04 ./test-overlay.sh
+      - run: |
+          podman run --rm --cap-add=sys_admin \
+            -v $PWD:/mnt -w /mnt \
+            docker.io/amd64/ubuntu:24.04 \
+            ./test-overlay.sh || {
+            sudo dmesg
+          }
 
   test_overlay_docker:
     name: Test overlay (docker)
@@ -28,4 +34,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - run: docker run --rm --cap-add=sys_admin -v $PWD:/mnt -w /mnt docker.io/amd64/ubuntu:24.04 ./test-overlay.sh
+      - run: |
+          docker run --rm --cap-add=sys_admin \
+            -v $PWD:/mnt -w /mnt \
+            docker.io/amd64/ubuntu:24.04 \
+            ./test-overlay.sh || {
+            sudo dmesg
+          }
