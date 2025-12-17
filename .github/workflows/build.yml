@@ -1,0 +1,31 @@
+name: Build
+
+on: [push, pull_request]
+
+jobs:
+  test_overlay:
+    name: Test overlay (normal)
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: sudo ./test-overlay.sh
+
+  test_overlay_podman:
+    name: Test overlay (podman)
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: podman run --rm --cap-add=sys_admin -v $PWD:/mnt -w /mnt docker.io/amd64/ubuntu:24.04 ./test-overlay.sh
+
+  test_overlay_docker:
+    name: Test overlay (docker)
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: docker run --rm --cap-add=sys_admin -v $PWD:/mnt -w /mnt docker.io/amd64/ubuntu:24.04 ./test-overlay.sh
