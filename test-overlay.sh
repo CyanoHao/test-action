@@ -14,6 +14,8 @@ install_fuse_overlay() {
 }
 
 create_layers() {
+  mkdir -p /tmp/overlay/merged
+
   mkdir -p /tmp/overlay/gcc/bin/
   echo "gcc" > /tmp/overlay/gcc/bin/gcc.txt
 
